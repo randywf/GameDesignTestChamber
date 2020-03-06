@@ -1,3 +1,8 @@
+/**
+ * Runge Kutta integration:
+ * https://gafferongames.com/post/integration_basics/
+ */
+
 struct State
 {
 	float x;
