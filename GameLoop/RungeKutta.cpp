@@ -1,7 +1,11 @@
+#include <iostream>
+#include <iomanip>
 /**
- * Runge Kutta integration:
+ * Runge Kutta integration: Simulates the motion of spring oscillation
  * https://gafferongames.com/post/integration_basics/
  */
+
+const float TOLERANCE = 0.001f;
 
 struct State
 {
@@ -26,8 +30,8 @@ float acceleration( const State & state, double t)
 Derivative evaluate( const State & initial, double t, float dt, const Derivative & d )
 {
 	State state;
-	state.x = initial.x + d.dx;
-	state.v = initial.v + d.dv;
+	state.x = initial.x + d.dx * dt;
+	state.v = initial.v + d.dv * dt;
 	
 	Derivative output;
 	output.dx = state.v;
@@ -48,8 +52,29 @@ void integrate( State & state, double t, float dt )
 	float dxdt = 1.0f / 6.0f * ( a.dx + 2.0f * ( b.dx + c.dx ) + d.dx );
 	float dvdt = 1.0f / 6.0f * ( a.dv + 2.0f * ( b.dv + c.dv ) + d.dv );
 
-	state.x += dxdt * dt;
-	state.v += dvdt * dt;
+	state.x = state.x + dxdt * dt;
+	state.v = state.v + dvdt * dt;
 
 	return;
+}
+
+int main(void)
+{
+	State example_state = {0.0f, 10.0f};
+	double t = 0.0f;
+	float dt = 0.01f;
+	int s = 0;
+
+	while (t <= 10.0)
+	{
+		integrate(example_state, t, dt);
+		if (t > ((float)s - TOLERANCE) && t < ((float)s + TOLERANCE)) {
+			std::cout << std::fixed << std::setprecision(5);
+			std::cout << "t=" << t << "\t";
+			std::cout << "position=" << example_state.x << "\t";
+			std::cout << "velocity=" << example_state.v << std::endl;
+			s++;
+		}
+		t += dt;
+	}
 }
