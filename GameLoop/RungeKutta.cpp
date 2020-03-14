@@ -68,6 +68,8 @@ int main(void)
 	while (t <= 10.0)
 	{
 		integrate(example_state, t, dt);
+		/**
+		 * This will print every second
 		if (t > ((float)s - TOLERANCE) && t < ((float)s + TOLERANCE)) {
 			std::cout << std::fixed << std::setprecision(5);
 			std::cout << "t=" << t << "\t";
@@ -75,6 +77,11 @@ int main(void)
 			std::cout << "velocity=" << example_state.v << std::endl;
 			s++;
 		}
+		 *
+		 */
+		std::cout << "time: " << t << "\t";
+		std::cout << "pos: " << example_state.x << "\t";
+		std::cout << "vel: " << example_state.v << std::endl;
 		t += dt;
 	}
 }
