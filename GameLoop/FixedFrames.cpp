@@ -10,7 +10,7 @@ int main(void)
 {
 	timespec current, previous; // time at start and end of main loop
 	timespec sleep_i, sleep_f; // time at start and end of sleep loop
-	int elapsed_ns, elapsed_s, ticks_per_sec, accumulator;
+	int elapsed_ns, ticks_per_sec, accumulator;
 	short first_loop = 1;
 
 	clock_gettime(CLOCK_MONOTONIC, &previous);
@@ -28,8 +28,7 @@ int main(void)
 				elapsed_ns = current.tv_nsec - previous.tv_nsec;
 			}
 			else {
-				elapsed_s = current.tv_sec - previous.tv_sec;
-				elapsed_ns = current.tv_nsec + (elapsed_s * 1000000000) - previous.tv_nsec;
+				elapsed_ns = current.tv_nsec + (current.tv_sec - previous.tv_sec) * 1000000000 - previous.tv_nsec;
 			}
 			// Find ticks per second
 			ticks_per_sec = 1000000000 / elapsed_ns;
