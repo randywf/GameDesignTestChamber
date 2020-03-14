@@ -1,31 +1,62 @@
 #include "GameClock.h"
 #include <iostream>
+#include <iomanip>
 
 // Define speed of game
-const int FRAMES_PER_SECOND = 1;
-const int SKIP_TICKS = 1000000000 / FRAMES_PER_SECOND;
+const int TICKRATE = 5;
+const int SKIP_TICKS = 1000000000 / TICKRATE;
 
 // Loop section
 int main(void)
 {
-	GameClock game_clock;
-	struct timespec game_time = game_clock.GetStartTime();
-	unsigned long long int current_game_tick = (game_time.tv_sec * 1000000000) + game_time.tv_nsec;
-	unsigned long long int next_game_tick = current_game_tick + SKIP_TICKS;
-	unsigned int nanoseconds_to_sleep = 0;
-	int current_frame = 0;
-	std::cout << game_time.tv_sec << " + " << game_time.tv_nsec << std::endl;
-	std::cout << current_game_tick << std::endl;
-	std::cout << next_game_tick << std::endl;
-	
-	while(1) {
-		current_frame++;
-		std::cout << current_frame << std::endl;
-		game_time = game_clock.GetCurrentTime();
-		current_game_tick = (game_time.tv_sec * 1000000000) + game_time.tv_nsec;
-		next_game_tick = current_game_tick + SKIP_TICKS;
-		nanoseconds_to_sleep = next_game_tick;
-		std::cout << nanoseconds_to_sleep << std::endl;
-		game_clock.SleepFor(nanoseconds_to_sleep);
+	GameClock gametime;
+	timespec current, previous;
+	timespec sleep_curr, sleep_prev;
+	int elapsed_ns, elapsed_s, ticks_per_sec, accumulated;
+
+	std::cout << "Beginning game loop..." << std::endl;
+	std::cout << "Start time: ";
+	std::cout << gametime.GetStartTime().tv_sec << "." << gametime.GetStartTime().tv_nsec << " seconds" << std::endl;
+
+	previous = gametime.GetCurrentTime();
+	accumulated = 0;
+
+	while(1)
+	{
+		current = gametime.GetCurrentTime();
+
+		// Calculate elapsed time
+		// This is used to double check that the tickrate is correct
+		if (current.tv_sec == previous.tv_sec) {
+			elapsed_ns = current.tv_nsec - previous.tv_nsec;
+		}
+		else {
+			elapsed_s = current.tv_sec - previous.tv_sec;
+			elapsed_ns = current.tv_nsec + (elapsed_s * 1000000000) - previous.tv_nsec;
+		}
+
+		// Find TPS
+		ticks_per_sec = 1000000000 / elapsed_ns;
+
+		// sleep until one time step has passed
+		while (accumulated < SKIP_TICKS)
+		{
+			sleep_curr = gametime.GetCurrentTime();
+			if (sleep_curr.tv_nsec > sleep_prev.tv_nsec) {
+				accumulated += sleep_curr.tv_nsec - sleep_prev.tv_nsec;
+			}
+			else {
+				accumulated += sleep_curr.tv_nsec + 1000000000 - sleep_prev.tv_nsec;
+			}
+			sleep_prev = sleep_curr;
+		}
+		while (accumulated >= SKIP_TICKS)
+		{
+			accumulated -= SKIP_TICKS;
+		}
+
+		std::cout << "Ticks per second:" << ticks_per_sec << std::endl;
+		
+		previous = current;
 	}
 }
